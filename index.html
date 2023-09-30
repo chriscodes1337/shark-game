@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <header>
+        <div id="scores">
+            <div>
+                <span>Score: </span>
+                <span id = "score-element">0</span>
+            </div>
+            <div>
+                <span>Your high score: </span>
+                <span id = "high-score-element">0</span>
+            </div>
+            <div>
+                <span>AI high score: </span>
+                <span id = "ai-high-score-element">0</span>
+            </div>
+        </div>
+    </header>
+    <div id="canvas-and-controls">
+        <div id="arrow-key-container">
+            <div id="arrow-key-grid">
+                <button id="arrow-key-button-up" class="arrow-btn" type="button">&#8593</button>
+                <button id="arrow-key-button-left" class="arrow-btn" type="button">&#8592</button><button id="arrow-key-button-right" class="arrow-btn" type="button">&#8594</button>
+                <button id="arrow-key-button-down" class="arrow-btn" type="button">&#8595</button>
+            </div>
+        </div>
+        <div id="canvas-container">
+            <canvas id="canvas" style="border: 1px solid black;"></canvas>
+            <a id="info-button" href="https://github.com/chriscodes1337/mad-cow-ai-game#instructions" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+              </svg></a>
+            <button id="mute-button" onclick="muteOrUnmute()"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path id="mute-svg" d="M10.717 3.55A.5.5 0 0 1 11 4v8a.5.5 0 0 1-.812.39L7.825 10.5H5.5A.5.5 0 0 1 5 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+              </svg>
+            </button>
+            <div id="modal-element">
+                <div>
+                    <div id="points-div">
+                        <p id="final-score-element">0</p>
+                        <p>Points</p>
+                    </div>
+                    <div>
+                        <button class="btn" id="start-game-button">Play</button>
+                    </div>
+                    <div>
+                        <button class="btn" id="start-sim-button">Let AI play</button>
+                    </div>
+                    <div>
+                        <button class="btn" id="train-net-button">Train new net</button>
+                    </div>
+                </div>
+            </div>
+            <div id="training-element" class="orange-modal" style="display: none;">
+                <p>Training... Please wait.</p>
+                <p id="training-percent">0%</p>
+            </div>
+            <div id="alert-element" class="orange-modal" style="display: none;">
+                <p>No training data available.<br>Please play before training.</p>
+                <button class="alert-btn" onclick="closeAlertElement()">OK</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <div id="footer-div">
+            <a href="credits.html">Credits</a>
+        </div>
+    </footer>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+<script src="scripts/utils.js"></script>
+<script src="scripts/sensor.js"></script>
+<script src="scripts/neuralnetwork.js"></script>
+<script src="scripts/main.js"></script>
