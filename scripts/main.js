@@ -48,13 +48,13 @@ let isHumanPlaying = true;
 let isPointerCoarse = (matchMedia("(pointer:coarse)").matches);
 
 //Variables for keyboard event listeners
-let rightPressed = false;
-let leftPressed = false;
-let upPressed = false;
-let downPressed = false;
+let rightPressed = 0;
+let leftPressed = 0;
+let upPressed = 0;
+let downPressed = 0;
 
 //Number of enemies
-const numberOfEnemies = 8;
+const numberOfEnemies = 16;
 
 //Scores
 let score = 0;
@@ -73,6 +73,10 @@ class Unit {
         this.x = x;
         this.y = y;
         this.velocity = velocity;
+        this.speed = 0;
+        this.turnRight = 0;
+        this.turnLeft = 0;
+        this.moveForward = 0;
         //Radius
         this.radius = radius;
         this.hypot = Math.hypot(this.radius, this.radius)
@@ -81,13 +85,6 @@ class Unit {
         //Image/Animation
         this.scale = 3;
         this.img = new Image();
-        this.imgXTiles = 2;
-        this.imgYTiles = 3;
-        this.imgMap = {
-            turnright: [1, 2],
-            turnleft: [0, 2],
-            gostraight: [2, 2]
-        }
         this.staggerCounter = 0;
         this.staggerCounterMax = 7;
         this.clock = 1;
@@ -141,9 +138,6 @@ class Unit {
         }
         const tileY = this.imgMap[this.state][0];
         const angle = Math.atan2(this.velocity.y, this.velocity.x);
-        if (this.isPlayable) {
-            console.log(angle);
-        }
         c.save();
         c.translate(this.x, this.y);
         c.rotate(angle + 1.5707963267948966);
@@ -169,63 +163,53 @@ class Unit {
      makePrediction() {
         return getPrediction(this.frameInputData, this.brain);
     }
-    updateVelocity() {
-        if (this.isPlayable) {
-            //For human player
+    updateMovementData() {
+            //For AI player
+            //If it has a neural network
+            if (this.brain && !this.isPlayable) {
+                this.netOutput = this.makePrediction();
+                this.turnRight = Math.round(this.netOutput[0]);
+                this.turnLeft = Math.round(this.netOutput[1]);
+                this.moveForward = Math.round(this.netOutput[2]);
+                this.speed = this.maxSpeed * this.moveForward;
+            } else {
+                if (upPressed == 1) {
+                    this.moveForward = 1;
+                } else {
+                    this.moveForward = 0;
+                }
+                switch(1) {
+                    case rightPressed:
+                        this.turnRight = 1;
+                        this.turnLeft = 0;
+                        break;
+                    case leftPressed:
+                        this.turnLeft = 1;
+                        this.turnRight = 0;
+                        break;
+                    default:
+                        this.turnRight = 0;
+                        this.turnLeft = 0;
+                }
+            }
             switch (true) {
-                case rightPressed:
-                    this.velocity = rotateUnitVector(this.velocity, -5);
+                case this.turnRight == 1:
+                    this.velocity = rotateUnitVector(this.velocity, this.turningAngle);
                     this.state = "turnright";
                     break;
-                case leftPressed:
-                    this.velocity = rotateUnitVector(this.velocity, 5);
+                case this.turnLeft == 1:
+                    this.velocity = rotateUnitVector(this.velocity, -this.turningAngle);
                     this.state = "turnleft";
                     break;
                 default:
                     this.state = "gostraight";
             }
-            if (upPressed) {
-                this.speed = 3;
-            } else {
-                this.speed = 0;
-            }
-        } else {
-            //For AI player
-            //If it has a neural network
-            if (this.brain) {
-                this.netOutput = this.makePrediction();
-                //Bring AI outputs closer to human outputs by finding the closest valid points on the unit circle, i.e., velocity pairs
-                const validPairs =  [[0.7071067811865476, 0.7071067811865475],
-                                [0.7071067811865476, -0.7071067811865475],
-                                [1, 0],
-                                [-0.7071067811865475, -0.7071067811865476],
-                                [-1, 0],
-                                [-0.7071067811865475, 0.7071067811865476],
-                                [0, -1],
-                                [0, 1],
-                                [0, 0]]
-                let closestValidPair;
-                let closestSquareDistance = 10;
-                for (let i = 0; i < validPairs.length; i++) {
-                    const p1 = validPairs[i][0];
-                    const p2 = validPairs[i][1];
-                    const q1 = this.netOutput[0];
-                    const q2 = this.netOutput[1];
-                    const squareDistance = getSquareDistance(p1, p2, q1, q2);
-                    if (squareDistance <= closestSquareDistance) {
-                        closestValidPair = validPairs[i];
-                        closestSquareDistance = squareDistance;
-                    }
-                }
-                this.velocity.x = closestValidPair[0];
-                this.velocity.y = closestValidPair[1];
-            }
-        }
+            this.speed = this.maxSpeed * this.moveForward;
     }
     updateHitbox() {
         this.polygon = this.createPolygon();
     }
-    updatePosition() {
+    fixedUpdate() {
         this.x = this.x + this.velocity.x * this.speed
         this.y = this.y + this.velocity.y * this.speed
     }
@@ -242,8 +226,9 @@ class Unit {
         }
     }
     updateOutputData() {
-        this.frameOutputData.push(this.velocity.x);
-        this.frameOutputData.push(this.velocity.y);
+        this.frameOutputData.push(this.turnRight);
+        this.frameOutputData.push(this.turnLeft);
+        this.frameOutputData.push(this.moveForward);
     }
     saveData() {
         //Only save data when a human is playing and no touchscreen device is used
@@ -278,21 +263,66 @@ class Unit {
     }
 }
 
-class Player extends Unit {
+class Diver extends Unit {
     constructor(x, y, velocity, radius, brain, isPlayable) {
         super(x, y, velocity, radius, brain, isPlayable)
-        this.speed = 3;
+        this.isPredator = 0;
+        this.isHuman = 1;
+        this.maxSpeed = 2;
+        this.speed = this.maxSpeed;
+        this.turningAngle = 0.3;
         //Image
-        this.img.src = "images/player.png"
+        this.img.src = "images/diver.png"
+        this.scale = 1.5;
+        this.imgXTiles = 2;
+        this.imgYTiles = 3;
+        this.imgMap = {
+            turnright: [1, 2],
+            turnleft: [0, 2],
+            gostraight: [2, 2]
+        }
     }
 }
 
-class Enemy extends Unit {
+class Shark extends Unit {
     constructor(x, y, velocity, radius, brain, isPlayable) {
         super(x, y, velocity, radius, brain, isPlayable)
-        this.speed = 3;
+        this.isPredator = 1;
+        this.isHuman = 0;
+        this.maxSpeed = 2;
+        this.speed = this.maxSpeed;
+        this.turningAngle = 0.2;
         //Image
-        this.img.src = "images/enemy.png"
+        this.img.src = "images/hai-fin-shadow.png"
+        this.scale = 0.5;
+        this.imgXTiles = 4;
+        this.imgYTiles = 4;
+        this.imgMap = {
+            turnright: [3, 4],
+            turnleft: [3, 4],
+            gostraight: [3, 4]
+        }
+    }
+}
+
+class Fish extends Unit {
+    constructor(x, y, velocity, radius, brain, isPlayable) {
+        super(x, y, velocity, radius, brain, isPlayable)
+        this.isPredator = 0;
+        this.isHuman = 0;
+        this.maxSpeed = 3;
+        this.speed = this.maxSpeed;
+        this.turningAngle = 0.4;
+        //Image
+        this.img.src = "images/fish.png"
+        this.scale = 0.8
+        this.imgXTiles = 2;
+        this.imgYTiles = 3;
+        this.imgMap = {
+            turnright: [1, 2],
+            turnleft: [0, 2],
+            gostraight: [2, 2]
+        }
     }
 }
 
@@ -312,12 +342,13 @@ function initGame() {
     units = [];
     //If there is no player, create one
     if (!player) {
-        player = new Player(playerStartX, playerStartY, {x: 0, y: -1}, 20, net, isHumanPlaying);
+        player = new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, newNet, isHumanPlaying);
     //Otherwise reset it
     } else {
         player.resetBeforeGame();
     }
     units.push(player);
+    //units.push(new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, copyModel(diverModel, [384, 64, 0, 0, 3]), false));
     //Reset scores
     score = 0;
     scoreElement.innerHTML = 0;
@@ -326,18 +357,18 @@ function initGame() {
 
 function spawnEnemies() {
     //Create a new enemy if the amount of enemies is less than specified
-    while (units.filter(unit => !unit.brain && !unit.isPlayable).length < numberOfEnemies) {
+    while (units.length < numberOfEnemies + 1) {
         const radius = 20;
         let x;
         let y;
 
-        //Pick positions outside all sides of the canvas
+        //Pick positions inside all sides of the canvas
         if (Math.random() < 0.5) {
-            x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
+            x = Math.random() < 0.5 ? 0 + radius : canvas.width - radius;
             y = Math.random() * canvas.height;
         } else {
             x = Math.random() * canvas.width;
-            y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
+            y = Math.random() < 0.5 ? 0 + radius : canvas.height - radius;
         }
 
         let angle;
@@ -347,14 +378,11 @@ function spawnEnemies() {
             x: Math.cos(angle),
             y: Math.sin(angle)
         }
-        units.push(new Enemy(x, y, { ...velocity }, radius, false, false));
-    }
-}
-
-let maxNumberOfBrainyAgents = 1;
-function spawnBrainyAgents() {
-    while (units.filter(unit => unit.brain && !unit.isPlayable).length < maxNumberOfBrainyAgents) {
-        units.push(new Player(playerStartX, playerStartY, {x: 0, y: -1}, 20, copyModel(newNet, [192, 64, 0, 0, 2]), false));
+        if (Math.random() < 0.2) {
+            units.push(new Shark(x, y, { ...velocity }, radius, copyModel(sharkModel, [384, 64, 0, 0, 3]), false));
+        } else {
+            units.push(new Fish(x, y, { ...velocity }, radius, copyModel(fishModel, [384, 64, 0, 0, 3]), false));
+        }
     }
 }
 
@@ -407,8 +435,7 @@ function update() {
     updateScores();
     //Spawn enemies if there are less enemies than specified
     spawnEnemies();
-    spawnBrainyAgents();
-    //Every 8 frames, get inputs, make decisions and save data; makes AI less jittery but makes inputs less responsive
+    //Every x frames, get inputs, make decisions and save data; makes AI less jittery but makes inputs less responsive
     if (timestamp % 8 == 0) {
         units.forEach(unit => {
             unit.updateHitbox();
@@ -417,13 +444,13 @@ function update() {
             unit.resetFrameData();
             unit.updateSensor();
             unit.updateInputData();
-            unit.updateVelocity();
+            unit.updateMovementData();
             unit.updateOutputData();
             unit.saveData();
         })
     }
     units.forEach(unit => {
-        unit.updatePosition();
+        unit.fixedUpdate();
     })
     //End game if player leaves the canvas
     if (player.x + player.radius < 0 || 
@@ -549,58 +576,58 @@ function closeAlertElement() {
 
 //Add event listeners for arrow keys that show up on touchscreen devices
 arrowKeyButtonUp.addEventListener("touchstart", () => {
-    upPressed = true;
+    upPressed = 1;
 })
 arrowKeyButtonLeft.addEventListener("touchstart", () => {
-    leftPressed = true;
+    leftPressed = 1;
 })
 arrowKeyButtonRight.addEventListener("touchstart", () => {
-    rightPressed = true;
+    rightPressed = 1;
 })
 arrowKeyButtonDown.addEventListener("touchstart", () => {
-    downPressed = true;
+    downPressed = 1;
 })
 arrowKeyButtonUp.addEventListener("touchend", () => {
-    upPressed = false;
+    upPressed = 1;
 })
 arrowKeyButtonLeft.addEventListener("touchend", () => {
-    leftPressed = false;
+    leftPressed = 1;
 })
 arrowKeyButtonRight.addEventListener("touchend", () => {
-    rightPressed = false;
+    rightPressed = 1;
 })
 arrowKeyButtonDown.addEventListener("touchend", () => {
-    downPressed = false;
+    downPressed = 1;
 })
 
 //Prepare functions for detecting keyboard inputs and add corresponding event listeners
 const arrowKeys = { left: 37, up: 38, right: 39, down: 40 }
 function keyDown(event) {
     if (event.keyCode == arrowKeys.left) {
-        leftPressed = true;
+        leftPressed = 1;
     }
     if (event.keyCode == arrowKeys.right) {
-        rightPressed = true;
+        rightPressed = 1;
     }
     if (event.keyCode == arrowKeys.up) {
-        upPressed = true;
+        upPressed = 1;
     }
     if (event.keyCode == arrowKeys.down) {
-        downPressed = true;
+        downPressed = 1;
     }
 }
 function keyUp(event) {
     if (event.keyCode == arrowKeys.left) {
-        leftPressed = false;
+        leftPressed = 0;
     }
     if (event.keyCode == arrowKeys.right) {
-        rightPressed = false;
+        rightPressed = 0;
     }
     if (event.keyCode == arrowKeys.up) {
-        upPressed = false;
+        upPressed = 0;
     }
     if (event.keyCode == arrowKeys.down) {
-        downPressed = false;
+        downPressed = 0;
     }
 }
 addEventListener("keydown", keyDown, false);

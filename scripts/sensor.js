@@ -46,7 +46,10 @@ class Sensor {
                     x: contact.x,
                     y: contact.y,
                     offset: contact.offset,
-                    velocity: {x: 0, y: 0}
+                    velocity: {x: 0, y: 0},
+                    isPredator: 0,
+                    isHuman: 0,
+                    isBoundary: 1
                 }
                 contacts.push(returnValue);
             } 
@@ -56,6 +59,8 @@ class Sensor {
             if (units[i] != this.unit) {
                 const poly = units[i].polygon;
                 const velo = units[i].velocity;
+                const pred = units[i].isPredator;
+                const hum = units[i].isHuman;
                 for (let j = 0; j < poly.length; j++) {
                     const value = getIntersection(
                         ray[0],
@@ -68,7 +73,10 @@ class Sensor {
                             x: value.x,
                             y: value.y,
                             offset: value.offset,
-                            velocity: velo
+                            velocity: velo,
+                            isPredator: pred,
+                            isHuman: hum,
+                            isBoundary: 0
                         }
                         contacts.push(returnValue);
                     }
@@ -86,7 +94,7 @@ class Sensor {
     }
 
     getInputs() {
-        const inputs = this.readingsArray.map(e=>e.offset).concat(this.readingsArray.map(e=>e.velocity.x)).concat(this.readingsArray.map(e=>e.velocity.y));
+        const inputs = this.readingsArray.map(e=>e.offset).concat(this.readingsArray.map(e=>e.velocity.x)).concat(this.readingsArray.map(e=>e.velocity.y)).concat(this.readingsArray.map(e=>e.isPredator)).concat(this.readingsArray.map(e=>e.isHuman)).concat(this.readingsArray.map(e=>e.isBoundary));
         return inputs;
     }
 
@@ -100,11 +108,13 @@ class Sensor {
             );
         
         const start = {x: this.unit.x, y: this.unit.y};
+        //Rotate ray here
+        const totalAngle = Math.atan2(this.unit.velocity.y, this.unit.velocity.x) + rayAngle;
         const end = {
             x: this.unit.x -
-                Math.sin(rayAngle) * this.rayLength,
+                Math.sin(totalAngle) * this.rayLength,
             y: this.unit.y -
-                Math.cos(rayAngle) * this.rayLength
+                Math.cos(totalAngle) * this.rayLength
         };
         //If the spread angle is greater than 180 degrees, the last ray must be omitted
         if (this.raySpreadAngle > Math.PI && i == this.rayCount - 1) {

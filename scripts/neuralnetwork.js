@@ -36,12 +36,18 @@ function copyModel(model, shapeArray) {
 }
 
 //Load model with weights and compile the model
-async function loadModel() {
-    const modelPath = "model/brain.json";
-    net = await tf.loadLayersModel(modelPath);
-    console.log("Model has been loaded.");
-    await net.compile({loss: "meanSquaredError", optimizer: tf.train.adam(0.001)});
-    console.log("Model has been compiled.");
+async function loadModels() {
+    diverModel = await tf.loadLayersModel("models/divermodel/brain.json");
+    await diverModel.compile({loss: "meanSquaredError", optimizer: tf.train.adam(0.001)});
+    
+    sharkModel = await tf.loadLayersModel("models/sharkmodel/brain.json");
+    await sharkModel.compile({loss: "meanSquaredError", optimizer: tf.train.adam(0.001)});
+
+    fishModel = await tf.loadLayersModel("models/fishmodel/brain.json");
+    await fishModel.compile({loss: "meanSquaredError", optimizer: tf.train.adam(0.001)});
+
+    console.log("Models have been loaded.");
+    console.log("Models have been compiled.");
 }
 
 async function saveModel() {
@@ -61,16 +67,18 @@ function getPrediction(data, model) {
 }
 
 //Define neural network settings
-let numberOfInputs = 192;
+let numberOfInputs = 384;
 let hidden1 = 64;
 let hidden2 = 0;
 let hidden3 = 0;
-let numberOfOutputs = 2;
+let numberOfOutputs = 3;
 
 //Set up an empty neural network
-let net = createModel(numberOfInputs, hidden1, hidden2, hidden3, numberOfOutputs);
+let diverModel;
+let sharkModel;
+let fishModel;
 //Load existing pretrained model with weights into it
-loadModel();
+loadModels();
 
 //Set up an additional untrained model for training
 let newNet = createModel(numberOfInputs, hidden1, hidden2, hidden3, numberOfOutputs);
