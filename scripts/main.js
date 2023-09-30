@@ -292,7 +292,7 @@ class Enemy extends Unit {
         super(x, y, velocity, radius, brain, isPlayable)
         this.speed = 3;
         //Image
-        this.img.src = "images/player.png"
+        this.img.src = "images/enemy.png"
     }
 }
 
