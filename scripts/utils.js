@@ -30,3 +30,14 @@ function getIntersection(A, B, C, D) {
         offset: 1
     }
 }
+
+//Calculate new unit vector
+//Rotate it counter-clockwise
+function rotateUnitVector(v, angle) {
+    const resultX = v.x * Math.cos(angle) - v.y * Math.sin(angle);
+    //console.log("resultX", resultX);
+    const resultY = v.x * Math.sin(angle) + v.y * Math.cos(angle);
+    //console.log("resultY", resultY);
+    const result = {x: resultX, y: resultY};
+    return result;
+}

@@ -82,16 +82,17 @@ class Unit {
         this.scale = 3;
         this.img = new Image();
         this.imgXTiles = 2;
-        this.imgYTiles = 2;
+        this.imgYTiles = 3;
         this.imgMap = {
             turnright: [1, 2],
-            turnleft: [0, 2]
+            turnleft: [0, 2],
+            gostraight: [2, 2]
         }
         this.staggerCounter = 0;
         this.staggerCounterMax = 7;
         this.clock = 1;
         this.tileX = 0;
-        this.state = "turnright";
+        this.state = "gostraight";
         //Neural network
         this.brain = brain;
         this.isUntrained = true;
@@ -139,7 +140,15 @@ class Unit {
             this.staggerCounter = 0;
         }
         const tileY = this.imgMap[this.state][0];
-        c.drawImage(this.img, this.tileX * tileWidth, tileY * tileHeight, tileWidth, tileHeight, this.x - imgXCenter / this.imgXTiles, this.y - imgYCenter / this.imgYTiles, tileWidth * this.scale, tileHeight * this.scale)
+        const angle = Math.atan2(this.velocity.y, this.velocity.x);
+        if (this.isPlayable) {
+            console.log(angle);
+        }
+        c.save();
+        c.translate(this.x, this.y);
+        c.rotate(angle + 1.5707963267948966);
+        c.drawImage(this.img, this.tileX * tileWidth, tileY * tileHeight, tileWidth, tileHeight, 0 - imgXCenter / this.imgXTiles, 0 - imgYCenter / this.imgYTiles, tileWidth * this.scale, tileHeight * this.scale)
+        c.restore();
     }
     drawSensor() {
         this.sensor.draw(c);
@@ -148,7 +157,7 @@ class Unit {
         this.isPlayable = isHumanPlaying;
         this.x = playerStartX;
         this.y = playerStartY;
-        this.velocity = {x: 0, y: 0};
+        this.velocity = {x: 0, y: -1};
         this.frameInputData = [];
         this.frameOutputData = [];
     }
@@ -164,41 +173,21 @@ class Unit {
         if (this.isPlayable) {
             //For human player
             switch (true) {
-                case rightPressed && downPressed:
-                    this.velocity.x = 0.7071067811865476;
-                    this.velocity.y = 0.7071067811865475;
+                case rightPressed:
+                    this.velocity = rotateUnitVector(this.velocity, -5);
+                    this.state = "turnright";
                     break;
-                case rightPressed && upPressed:
-                    this.velocity.x = 0.7071067811865476;
-                    this.velocity.y = -0.7071067811865475;
-                    break;
-                case rightPressed && !upPressed && !downPressed:
-                    this.velocity.x = 1;
-                    this.velocity.y = 0;
-                    break;
-                case leftPressed && upPressed:
-                    this.velocity.x = -0.7071067811865475;
-                    this.velocity.y = -0.7071067811865476;
-                    break;
-                case leftPressed && !upPressed && !downPressed:
-                    this.velocity.x = -1;
-                    this.velocity.y = 0;
-                    break
-                case leftPressed && downPressed:
-                    this.velocity.x = -0.7071067811865475;
-                    this.velocity.y = 0.7071067811865476;
-                    break;
-                case upPressed && !leftPressed && !rightPressed:
-                    this.velocity.x = 0;
-                    this.velocity.y = -1;
-                    break;
-                case downPressed && !leftPressed && !rightPressed:
-                    this.velocity.x = 0;
-                    this.velocity.y = 1;
+                case leftPressed:
+                    this.velocity = rotateUnitVector(this.velocity, 5);
+                    this.state = "turnleft";
                     break;
                 default:
-                    this.velocity.x = 0;
-                    this.velocity.y = 0;
+                    this.state = "gostraight";
+            }
+            if (upPressed) {
+                this.speed = 3;
+            } else {
+                this.speed = 0;
             }
         } else {
             //For AI player
@@ -263,13 +252,6 @@ class Unit {
             this.totalOutputData = this.totalOutputData.concat(this.frameOutputData);
         }
     }
-    setState() {
-        if (this.velocity.x < 0) {
-            this.state = "turnleft";
-        } else {
-            this.state = "turnright";
-        }
-    }
     async trainNet(inputs, outputs, batchsize, epochs, iterations) {
         console.log("training input data:", inputs, "training output data:", outputs);
         console.time("training completed in");
@@ -330,7 +312,7 @@ function initGame() {
     units = [];
     //If there is no player, create one
     if (!player) {
-        player = new Player(playerStartX, playerStartY, {x: 0, y: 0}, 20, net, isHumanPlaying);
+        player = new Player(playerStartX, playerStartY, {x: 0, y: -1}, 20, net, isHumanPlaying);
     //Otherwise reset it
     } else {
         player.resetBeforeGame();
@@ -365,14 +347,14 @@ function spawnEnemies() {
             x: Math.cos(angle),
             y: Math.sin(angle)
         }
-        units.push(new Enemy(x, y, velocity, radius, false, false));
+        units.push(new Enemy(x, y, { ...velocity }, radius, false, false));
     }
 }
 
 let maxNumberOfBrainyAgents = 1;
 function spawnBrainyAgents() {
     while (units.filter(unit => unit.brain && !unit.isPlayable).length < maxNumberOfBrainyAgents) {
-        units.push(new Player(playerStartX, playerStartY, {x: 0, y: 0}, 20, copyModel(newNet, [192, 64, 0, 0, 2]), false));
+        units.push(new Player(playerStartX, playerStartY, {x: 0, y: -1}, 20, copyModel(newNet, [192, 64, 0, 0, 2]), false));
     }
 }
 
@@ -437,7 +419,6 @@ function update() {
             unit.updateInputData();
             unit.updateVelocity();
             unit.updateOutputData();
-            unit.setState();
             unit.saveData();
         })
     }
