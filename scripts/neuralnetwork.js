@@ -67,7 +67,7 @@ function getPrediction(data, model) {
 }
 
 //Define neural network settings
-let numberOfInputs = 384;
+let numberOfInputs = 192;
 let hidden1 = 64;
 let hidden2 = 0;
 let hidden3 = 0;

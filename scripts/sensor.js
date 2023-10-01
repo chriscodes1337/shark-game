@@ -14,10 +14,10 @@ class Sensor {
     constructor(unit) {
         this.unit = unit;
         //Use a rayCount that is 1 higher than required for > 180 degrees
-        this.rayCount = 65;
+        this.rayCount = 33;
         //452.55 is the max. possible length for a canvas of size 640x640
         this.rayLength = 452.55;
-        this.raySpreadAngle = Math.PI * 2;
+        this.raySpreadAngle = (4 / 3) * Math.PI;
         
         this.raysArray = [];
         this.readingsArray = [];
@@ -109,12 +109,12 @@ class Sensor {
         
         const start = {x: this.unit.x, y: this.unit.y};
         //Rotate ray here
-        const totalAngle = Math.atan2(this.unit.velocity.y, this.unit.velocity.x) + rayAngle;
+        const totalAngle = Math.atan2(this.unit.velocity.y, this.unit.velocity.x) + rayAngle + Math.PI;
         const end = {
             x: this.unit.x -
-                Math.sin(totalAngle) * this.rayLength,
+                Math.cos(totalAngle) * this.rayLength,
             y: this.unit.y -
-                Math.cos(totalAngle) * this.rayLength
+                Math.sin(totalAngle) * this.rayLength
         };
         //If the spread angle is greater than 180 degrees, the last ray must be omitted
         if (this.raySpreadAngle > Math.PI && i == this.rayCount - 1) {

@@ -348,7 +348,7 @@ function initGame() {
         player.resetBeforeGame();
     }
     units.push(player);
-    //units.push(new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, copyModel(diverModel, [384, 64, 0, 0, 3]), false));
+    //units.push(new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, copyModel(diverModel, [192, 64, 0, 0, 3]), false));
     //Reset scores
     score = 0;
     scoreElement.innerHTML = 0;
@@ -379,9 +379,9 @@ function spawnEnemies() {
             y: Math.sin(angle)
         }
         if (Math.random() < 0.2) {
-            units.push(new Shark(x, y, { ...velocity }, radius, copyModel(sharkModel, [384, 64, 0, 0, 3]), false));
+            units.push(new Shark(x, y, { ...velocity }, radius, copyModel(sharkModel, [192, 64, 0, 0, 3]), false));
         } else {
-            units.push(new Fish(x, y, { ...velocity }, radius, copyModel(fishModel, [384, 64, 0, 0, 3]), false));
+            units.push(new Fish(x, y, { ...velocity }, radius, copyModel(fishModel, [192, 64, 0, 0, 3]), false));
         }
     }
 }
