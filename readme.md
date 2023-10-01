@@ -17,9 +17,9 @@ but maybe you can train a better AI!<br>
 Training can take a while depending on your hardware and the amount of data you have recorded (or may not work on older hardware).
 
 ## Credits
-<p>Shark animation by Sevarihk from <a href="https://opengameart.org/content/shark-sprites-animated-4-directional">opengameart.org</a></p>
-<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 DEED License</a>
-<p>(No changes were made.)</p>
+<p>Shark animation by Sevarihk from <a href="https://opengameart.org/content/shark-sprites-animated-4-directional">opengameart.org</a><br>
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 DEED License</a><br>
+    (No changes were made.)</p>
 <p>Based on tutorials by<br><a href="https://www.youtube.com/c/chriscourses">Chris Courses</a>, <a href="https://www.youtube.com/@TheCodingTrain">Coding Train</a>, and <a href="https://www.youtube.com/@Radu/videos">Dr. Radu Mariescu-Istodor</a></p>
 <p>Bootstrap icons from: <a href="https://icons.getbootstrap.com/">https://icons.getbootstrap.com/</a><br>
 Copyright (c) 2011-2023 The Bootstrap Authors<br>
