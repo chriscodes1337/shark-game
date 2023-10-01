@@ -476,17 +476,19 @@ function update() {
         }
     })
     //End game if player touches an enemy
-    // units.forEach((unit, unitIndex) => {
-    //     p1 = player.x;
-    //     p2 = player.y;
-    //     q1 = unit.x;
-    //     q2 = unit.y;
-    //     const squareDistance = getSquareDistance(p1, p2, q1, q2);
-    //     if (squareDistance <= (player.radius * player.radius) + (unit.radius * unit.radius)) {
-    //         endGame();
-    //         return;
-    //     }
-    // })
+    units.forEach((unit, unitIndex) => {
+        if (unit != player && unit.isPredator) {
+            p1 = player.x;
+            p2 = player.y;
+            q1 = unit.x;
+            q2 = unit.y;
+            const squareDistance = getSquareDistance(p1, p2, q1, q2);
+            if (squareDistance <= (player.radius * player.radius) + (unit.radius * unit.radius)) {
+                endGame();
+                return;
+            }
+        }
+    })
     //Increment timer
     timestamp++;
 }
