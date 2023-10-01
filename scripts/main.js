@@ -41,6 +41,7 @@ const arrowKeyButtonRight = document.querySelector("#arrow-key-button-right");
 const arrowKeyButtonDown = document.querySelector("#arrow-key-button-down");
 
 
+const frameInWhichToUpdate = 8;
 
 //If isHumanPlaying is true, the user can play. Otherwise, the AI will play.
 let isHumanPlaying = true;
@@ -192,24 +193,24 @@ class Unit {
                         this.turnLeft = 0;
                 }
             }
-            switch (true) {
-                case this.turnRight == 1:
-                    this.velocity = rotateUnitVector(this.velocity, this.turningAngle);
-                    this.state = "turnright";
-                    break;
-                case this.turnLeft == 1:
-                    this.velocity = rotateUnitVector(this.velocity, -this.turningAngle);
-                    this.state = "turnleft";
-                    break;
-                default:
-                    this.state = "gostraight";
-            }
             this.speed = this.maxSpeed * this.moveForward;
     }
     updateHitbox() {
         this.polygon = this.createPolygon();
     }
     fixedUpdate() {
+        switch (true) {
+            case this.turnRight == 1:
+                this.velocity = rotateUnitVector(this.velocity, this.turningAngle / frameInWhichToUpdate);
+                this.state = "turnright";
+                break;
+            case this.turnLeft == 1:
+                this.velocity = rotateUnitVector(this.velocity, -this.turningAngle / frameInWhichToUpdate);
+                this.state = "turnleft";
+                break;
+            default:
+                this.state = "gostraight";
+        }
         this.x = this.x + this.velocity.x * this.speed
         this.y = this.y + this.velocity.y * this.speed
     }
@@ -435,8 +436,8 @@ function update() {
     updateScores();
     //Spawn enemies if there are less enemies than specified
     spawnEnemies();
-    //Every x frames, get inputs, make decisions and save data; makes AI less jittery but makes inputs less responsive
-    if (timestamp % 8 == 0) {
+    //Every frameInWhichToUpdate frames, get inputs, make decisions and save data; makes AI less jittery but makes inputs less responsive
+    if (timestamp % frameInWhichToUpdate == 0) {
         units.forEach(unit => {
             unit.updateHitbox();
         })
