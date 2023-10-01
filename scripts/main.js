@@ -342,7 +342,7 @@ function initGame() {
     units = [];
     //If there is no player, create one
     if (!player) {
-        player = new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, newNet, isHumanPlaying);
+        player = new Diver(playerStartX, playerStartY, {x: 0, y: -1}, 20, diverModel, isHumanPlaying);
     //Otherwise reset it
     } else {
         player.resetBeforeGame();
