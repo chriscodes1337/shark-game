@@ -595,16 +595,16 @@ arrowKeyButtonDown.addEventListener("touchstart", () => {
     downPressed = 1;
 })
 arrowKeyButtonUp.addEventListener("touchend", () => {
-    upPressed = 1;
+    upPressed = 0;
 })
 arrowKeyButtonLeft.addEventListener("touchend", () => {
-    leftPressed = 1;
+    leftPressed = 0;
 })
 arrowKeyButtonRight.addEventListener("touchend", () => {
-    rightPressed = 1;
+    rightPressed = 0;
 })
 arrowKeyButtonDown.addEventListener("touchend", () => {
-    downPressed = 1;
+    downPressed = 0;
 })
 
 //Prepare functions for detecting keyboard inputs and add corresponding event listeners

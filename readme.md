@@ -10,7 +10,6 @@ You can then train a new AI model based on your inputs by using the "Train new n
 The AI will now play just like you!
 
 ## Additional info
-The arrow buttons on touchscreen devices do not work properly in this version.<br>
 The pretrained AI has been trained on a ton of human inputs.<br>
 Using the pretrained base model that loads when you first load or refresh the page may give you the best results,<br>
 but maybe you can train a better AI!<br>
