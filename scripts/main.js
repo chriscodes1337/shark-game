@@ -475,20 +475,25 @@ function update() {
             units.splice(unitIndex, 1);
         }
     })
-    //End game if player touches an enemy
-    units.forEach((unit, unitIndex) => {
-        if (unit != player && unit.isPredator) {
-            p1 = player.x;
-            p2 = player.y;
-            q1 = unit.x;
-            q2 = unit.y;
+    // Remove fish if shark catches it and end game if shark catches human
+    for (let i = 0; i < units.length; i++) {
+        for (let j = i + 1; j < units.length; j++) {
+            p1 = units[i].x;
+            p2 = units[i].y;
+            q1 = units[j].x;
+            q2 = units[j].y;
             const squareDistance = getSquareDistance(p1, p2, q1, q2);
-            if (squareDistance <= (player.radius * player.radius) + (unit.radius * unit.radius)) {
-                endGame();
-                return;
+            if (squareDistance <= (units[i].radius * units[i].radius) + (units[j].radius * units[j].radius)) {
+                if (!units[i].isHuman && !units[i].isPredator && units[j].isPredator) {
+                    units.splice(i, 1)
+                }
+                if (units[i] == player && units[j].isPredator) {
+                    endGame();
+                    return;
+                }
             }
         }
-    })
+    }
     //Increment timer
     timestamp++;
 }
